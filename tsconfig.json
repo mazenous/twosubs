@@ -1,0 +1,9 @@
+{
+  "files": ["src/content.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "noImplicitAny": false,
+    // Redirect the file output straight into the node_modules cache folder
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Twosubs",
+  "version": "1.0",
+
+  "description": "Adds two subtitles to Youtube videos.",
+
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "twosubs@mozilla.org",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "permissions": ["activeTab", "tabs"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["output/content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "output/popup/popup.html"
+  }
+}
