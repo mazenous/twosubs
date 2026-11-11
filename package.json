@@ -7,9 +7,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "watch": "vite build --watch ",
-    "build-content": "vite build --config vite.content.config.ts",
-    "watch-content": "vite build --config vite.content.config.ts --watch"
+    "watch": "vite build --watch "
   },
   "keywords": [],
   "author": "",
@@ -18,6 +16,7 @@
   "dependencies": {
     "@types/firefox-webext-browser": "^143.0.1",
     "vite": "^8.3.7",
+    "webextension-polyfill": "^0.12.0",
     "youtube-transcript": "^1.3.1"
   },
   "devDependencies": {

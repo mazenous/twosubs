@@ -7,12 +7,16 @@ export default defineConfig({
     outDir: "output",
     rollupOptions: {
       input: {
-        content: resolve(__dirname, "src/content.ts"), // main popup
+        content: resolve(import.meta.dirname, "src/content.ts"),
+        //TODO popup should be in output/popup not in src/popup
+        popup: resolve(import.meta.dirname, "src/popup/popup.html"),
         // background: resolve(__dirname, "src/background/background.ts"), // background script
       },
+
       output: {
-        entryFileNames: (chunk) =>
-          chunk.name === "content" ? "content.js" : "assets/[name]-[hash].js",
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name].js",
+        assetFileNames: "[name].[ext]",
       },
     },
   },

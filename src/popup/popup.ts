@@ -1,53 +1,59 @@
-import { fetchAvailableLanguages } from "../util.js";
-declare const browser: any;
-const VIDEO_ID = "XFW46DzuIvw";
-// popup/popup.ts
+// @ts-nocheck
+import browser from "webextension-polyfill";
+import type { AvailableLanguage } from "../util";
+document.addEventListener("DOMContentLoaded", async () => {
+  const firstSelect = document.getElementById("firstLang");
+  const secondSelect = document.getElementById("secondLang");
+  const applyBtn = document.getElementById("applyBtn");
 
-async function initPopup() {
-  try {
-    // 1. Target the active YouTube tab
-    const tabs = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
+  // 1. Find the active tab
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!tabs || !tabs[0]) return;
+  const activeTabId = tabs[0].id;
+
+  // 2. Ask content script for languages
+  browser.tabs
+    .sendMessage(activeTabId, {
+      action: "get_languages",
+    })
+    .then((response) => {
+      if (response && response.success) {
+        populateDropdowns(response.languages);
+        if (response.selectedLanguages) {
+          firstSelect.value = response.selectedLanguages.firstLang;
+          secondSelect.value = response.selectedLanguages.secondLang;
+        }
+      } else {
+        showError(response?.error || "Failed to load languages.");
+      }
+    })
+    .catch((err) => {
+      showError("Make sure you are on an active YouTube video page.");
     });
-    const activeTabId = tabs[0]?.id;
-    if (!activeTabId) return;
 
-    // 2. Await the response from the content script
-    const response = await browser.tabs.sendMessage(activeTabId, {
-      action: "GET_AVAILABLE_LANGUAGES",
+  // Helper to fill <select> options
+  function populateDropdowns(languages: AvailableLanguage[]) {
+    languages.forEach((lang) => {
+      // Handles both string arrays and object arrays safely
+      const val = lang.languageCode;
+      const name = lang.languageName;
+
+      firstSelect.options.add(new Option(name, val));
+      secondSelect.options.add(new Option(name, val));
     });
-
-    if (response?.success) {
-      // 3. Populate your dropdown menus with the real live data!
-      populateDropdowns(response.languages);
-    } else {
-      console.error("Content script error:", response?.error);
-    }
-  } catch (error) {
-    console.error(
-      "Could not communicate with content script. Make sure you are on a YouTube video page.",
-      error,
-    );
   }
-}
 
-function populateDropdowns(tracks: any[]) {
-  const firstSelect = document.getElementById("firstLang") as HTMLSelectElement;
-  const secondSelect = document.getElementById(
-    "secondLang",
-  ) as HTMLSelectElement;
-  if (!firstSelect || !secondSelect) return;
+  function showError(msg) {
+    firstSelect.innerHTML = `<option>${msg}</option>`;
+    secondSelect.innerHTML = `<option>--</option>`;
+  }
 
-  firstSelect.innerHTML = "";
-  secondSelect.innerHTML = "";
-
-  tracks.forEach((track) => {
-    firstSelect.add(new Option(track.languageName.toUpperCase(), track.url));
-    secondSelect.add(new Option(track.languageName.toUpperCase(), track.url));
+  // 3. Send selections back to content script when clicking apply
+  applyBtn.addEventListener("click", async () => {
+    await browser.tabs.sendMessage(activeTabId, {
+      action: "apply_captions",
+      firstLang: firstSelect.value,
+      secondLang: secondSelect.value,
+    });
   });
-  if (tracks.length > 1) secondSelect.selectedIndex = 1;
-}
-
-// Kick off initialization immediately when popup opens
-document.addEventListener("DOMContentLoaded", initPopup);
+});
