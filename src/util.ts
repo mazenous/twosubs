@@ -1,10 +1,5 @@
 import { fetchTranscript } from "youtube-transcript";
-
-export interface AvailableLanguage {
-  languageName: string;
-  languageCode: string;
-  baseUrl: string;
-}
+import { YTAvailableCaptionSpec } from "./types/captions";
 
 export function getVideoId() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -13,7 +8,7 @@ export function getVideoId() {
 
 export async function fetchAvailableLanguages(
   VID: string,
-): Promise<AvailableLanguage[]> {
+): Promise<YTAvailableCaptionSpec[] | undefined> {
   const resp = await fetch("https://www.youtube.com/youtubei/v1/player", {
     method: "POST",
     headers: {
@@ -37,7 +32,7 @@ export async function fetchAvailableLanguages(
   const data = await resp.json();
   const captionTracks =
     data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-
+  if (!captionTracks) return undefined;
   const captionData = captionTracks.map((c: any) => ({
     languageName: c.name.runs[0].text,
     languageCode: c.languageCode,

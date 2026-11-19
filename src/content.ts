@@ -1,29 +1,29 @@
 // content_scripts/content.ts
 import { fetchAvailableLanguages, handleVideoLoad } from "./util";
+import { ExtensionMessage } from "./types/messages";
 
 //@ts-ignore
-browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  //@ts-ignore
+browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
   if (message.action === "get_languages") {
-    // Extract videoId from URL if not already provided
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get("v");
 
     if (!videoId) {
-      sendResponse({ success: false, error: "No video found" });
-      return true; // Keep channel open
+      return Promise.resolve({
+        success: false,
+        error: "No video found",
+      });
     }
 
-    // Call your existing fetch function
-    fetchAvailableLanguages(videoId)
-      .then((languages) => {
-        sendResponse({ success: true, languages: languages });
-      })
-      .catch((err) => {
-        sendResponse({ success: false, error: err.message });
-      });
-
-    return true; // Crucial: Tells Firefox to wait for the async promise to resolve
+    return fetchAvailableLanguages(videoId)
+      .then((languages) => ({
+        success: true,
+        languages,
+      }))
+      .catch((err) => ({
+        success: false,
+        error: err.message,
+      }));
   }
 
   // Handle saving the user's caption choices

@@ -1,48 +1,14 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <style>
-      body {
-        width: 220px;
-        font-family: sans-serif;
-        padding: 10px;
-      }
-      label {
-        display: block;
-        margin-top: 8px;
-        font-size: 12px;
-      }
-      select,
-      button {
-        width: 100%;
-        margin-top: 4px;
-        padding: 4px;
-      }
-      button {
-        margin-top: 12px;
-        background: #cc0000;
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Captions</title>
   </head>
+
   <body>
-    <h3>YouTube Dual Captions</h3>
+    <div id="app"></div>
 
-    <label for="firstLang">Primary Caption:</label>
-    <select id="firstLang">
-      <option>Select a Langugage</option>
-    </select>
-
-    <label for="secondLang">Secondary Caption:</label>
-    <select id="secondLang">
-      <option>Select a Langugage</option>
-    </select>
-
-    <button id="applyBtn">Apply Captions</button>
-
-    <script type="module" src="./popup.ts"></script>
+    <script type="module" src="main.ts"></script>
   </body>
 </html>
