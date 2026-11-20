@@ -1,4 +1,3 @@
-// content_scripts/content.ts
 import {
   fetchAvailableLanguages,
   handleVideoLoad,
@@ -6,9 +5,10 @@ import {
   enableAvailablePreferences,
 } from "./util";
 import { ExtensionMessage } from "./types/messages";
+import browser from "webextension-polyfill";
 
-//@ts-ignore
-browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
+browser.runtime.onMessage.addListener((msg: unknown) => {
+  const message = msg as ExtensionMessage;
   if (message.action === "get_languages") {
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get("v");
@@ -32,11 +32,8 @@ browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
   }
 
   // Handle saving the user's caption choices
-  //@ts-ignore
   if (message.action === "apply_captions") {
-    //@ts-ignore
     console.log("Selected captions:", message.firstLang, message.secondLang);
-    //@ts-ignore
     handleVideoLoad(message.firstLang, message.secondLang);
   }
 });

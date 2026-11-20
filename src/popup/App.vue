@@ -31,11 +31,12 @@ onMounted(async () => {
     }
     const response = await getLanguages(activeTabId);
     if (!response.languages) {
-      error.value = response?.error || "Failed to load languages.";
-      throw new Error(response?.error || "Failed to load languages.");
+      error.value = response?.error || "No languages available";
+      return;
+      // throw new Error(response?.error || "Failed to load languages.");
     }
 
-    if (response.languages.length === 1)
+    if (response.languages.length <= 1)
       error.value = "Only one language available, use Youtube captions";
 
     languages.value = response.languages;

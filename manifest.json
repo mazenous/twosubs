@@ -26,6 +26,6 @@
   ],
   "action": {
     "default_title": "Twosubs",
-    "default_popup": "output/src/popup/popup.html"
+    "default_popup": "output/popup/popup.html"
   }
 }

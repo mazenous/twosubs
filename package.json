@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --config vite.content.config.ts",
     "lint": "eslint .",
     "preview": "vite preview",
-    "watch": "vite build --watch "
+    "watch": "vite build --watch && vite build --config vite.content.config.ts --watch"
   },
   "keywords": [],
   "author": "",

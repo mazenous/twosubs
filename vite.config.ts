@@ -1,25 +1,33 @@
 import { defineConfig } from "vite";
-import { resolve } from "path";
 import vue from "@vitejs/plugin-vue";
+import { resolve } from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  root: "src/popup",
   build: {
+    outDir: "../../output/popup",
+    emptyOutDir: true,
     sourcemap: true,
-    outDir: "output",
+
     rollupOptions: {
       input: {
-        content: resolve(import.meta.dirname, "src/content.ts"),
-        //TODO popup should be in output/popup not in src/popup
         popup: resolve(import.meta.dirname, "src/popup/popup.html"),
-        // background: resolve(__dirname, "src/background/background.ts"), // background script
       },
-
       output: {
-        entryFileNames: "[name].js",
-        chunkFileNames: "[name].js",
-        assetFileNames: "[name].[ext]",
+        entryFileNames: "assets/js/[name].js",
+        chunkFileNames: "assets/js/[name].js",
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith(".css")) {
+            return "assets/css/[name][extname]";
+          }
+          if (assetInfo.name?.endsWith(".html")) {
+            console.log("haha");
+            return "[name][extname]";
+          }
+
+          return "assets/[name][extname]";
+        },
       },
     },
   },

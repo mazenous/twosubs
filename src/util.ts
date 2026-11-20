@@ -1,5 +1,6 @@
 import { fetchTranscript } from "youtube-transcript";
 import { YTAvailableCaptionSpec } from "./types/captions";
+import { getVideoPreferences } from "./popup/services/storage";
 
 export function getVideoId() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -148,31 +149,9 @@ export async function handleVideoLoad(lang1: string, lang2: string) {
   }
 }
 
-let currentVideoId: string | null = null;
-
 function disableCaptions() {
   console.log("disable captions");
   document.getElementById("fx-extension-subtitles")?.remove();
-}
-
-export interface VideoPreferences {
-  firstLang: string;
-  secondLang: string;
-}
-//TODO this should be imported from services but common imports
-//are being imported in bundle which won't work in content.js
-export async function getVideoPreferences(
-  videoId: string,
-): Promise<VideoPreferences | null> {
-  //@ts-ignore
-  const result = await browser.storage.local.get("videoPreferences");
-  console.log(JSON.stringify(result, null, 2));
-  const allPreferences = (result.videoPreferences ?? {}) as Record<
-    string,
-    VideoPreferences
-  >;
-
-  return allPreferences[videoId] ?? null;
 }
 
 export async function enableAvailablePreferences(videoId: string) {
