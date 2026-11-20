@@ -76,7 +76,7 @@ async function handleApply() {
 
 <template>
   <div class="popup">
-    <h2>YouTube Captions</h2>
+    <h2>TwoSubs</h2>
 
     <div v-if="loading">Loading languages...</div>
 

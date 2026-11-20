@@ -120,6 +120,7 @@ export function initDualCaptions(video, moviePlayer, track1, track2) {
 }
 
 export async function handleVideoLoad(lang1: string, lang2: string) {
+  console.log("handleVideoLoad");
   const videoId = getVideoId();
   if (!videoId) return;
 
@@ -150,39 +151,43 @@ export async function handleVideoLoad(lang1: string, lang2: string) {
 let currentVideoId: string | null = null;
 
 function disableCaptions() {
-  document.getElementById("#fx-extension-subtitles")?.remove();
+  console.log("disable captions");
+  document.getElementById("fx-extension-subtitles")?.remove();
+}
+
+export interface VideoPreferences {
+  firstLang: string;
+  secondLang: string;
+}
+//TODO this should be imported from services but common imports
+//are being imported in bundle which won't work in content.js
+export async function getVideoPreferences(
+  videoId: string,
+): Promise<VideoPreferences | null> {
+  //@ts-ignore
+  const result = await browser.storage.local.get("videoPreferences");
+  console.log(JSON.stringify(result, null, 2));
+  const allPreferences = (result.videoPreferences ?? {}) as Record<
+    string,
+    VideoPreferences
+  >;
+
+  return allPreferences[videoId] ?? null;
+}
+
+export async function enableAvailablePreferences(videoId: string) {
+  const preferences = await getVideoPreferences(videoId);
+  if (preferences) {
+    handleVideoLoad(preferences.firstLang, preferences.secondLang);
+  }
 }
 
 export async function handleVideoChange() {
   console.log("video id is changing");
   const newVideoId = getVideoId();
-
-  if (newVideoId === currentVideoId) return;
-
   // Disable captions from the previous video
   disableCaptions();
-
-  // currentVideoId = newVideoId;
-  // //TODO I probably need to enable captions if there are saved ones
-  // // for that I need to communicate with my pop to get this info from local storage
-
-  // if (!newVideoId) return;
-
-  // // Load preferences for the new video
-  // const preferences = await getVideoPreferences(newVideoId);
-
-  // // Make sure we haven't navigated to another video
-  // if (currentVideoId !== newVideoId) return;
-
-  // if (preferences) {
-  //   console.log("Loaded preferences:", preferences);
-  //   // Update selected languages
-  //   // Apply captions if appropriate
-  //   handleVideoLoad(preferences.firstLang, preferences.secondLang);
-  // }
+  if (!newVideoId) return;
+  //Enable captions for new video if preference available in storage
+  await enableAvailablePreferences(newVideoId);
 }
-
-// Initial video
-handleVideoChange();
-
-// YouTube SPA navigation

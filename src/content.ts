@@ -3,6 +3,7 @@ import {
   fetchAvailableLanguages,
   handleVideoLoad,
   handleVideoChange,
+  enableAvailablePreferences,
 } from "./util";
 import { ExtensionMessage } from "./types/messages";
 
@@ -41,4 +42,11 @@ browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
 });
 
 document.addEventListener("yt-navigate-finish", handleVideoChange);
+document.addEventListener("DOMContentLoaded", () => {
+  const videoId = new URLSearchParams(window.location.search).get("v");
+
+  if (videoId) {
+    enableAvailablePreferences(videoId);
+  }
+});
 window.addEventListener("popstate", handleVideoChange);
