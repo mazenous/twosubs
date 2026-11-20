@@ -9,8 +9,6 @@ export async function getVideoPreferences(
   videoId: string,
 ): Promise<VideoPreferences | null> {
   const result = await browser.storage.local.get("videoPreferences");
-  console.log(JSON.stringify(result.videoPreferences, null, 2));
-
   const allPreferences = (result.videoPreferences ?? {}) as Record<
     string,
     VideoPreferences

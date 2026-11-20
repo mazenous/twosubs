@@ -1,5 +1,9 @@
 // content_scripts/content.ts
-import { fetchAvailableLanguages, handleVideoLoad } from "./util";
+import {
+  fetchAvailableLanguages,
+  handleVideoLoad,
+  handleVideoChange,
+} from "./util";
 import { ExtensionMessage } from "./types/messages";
 
 //@ts-ignore
@@ -35,3 +39,6 @@ browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
     handleVideoLoad(message.firstLang, message.secondLang);
   }
 });
+
+document.addEventListener("yt-navigate-finish", handleVideoChange);
+window.addEventListener("popstate", handleVideoChange);

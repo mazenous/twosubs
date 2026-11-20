@@ -146,3 +146,43 @@ export async function handleVideoLoad(lang1: string, lang2: string) {
     console.error("Failed to fetch or apply captions:", error);
   }
 }
+
+let currentVideoId: string | null = null;
+
+function disableCaptions() {
+  document.getElementById("#fx-extension-subtitles")?.remove();
+}
+
+export async function handleVideoChange() {
+  console.log("video id is changing");
+  const newVideoId = getVideoId();
+
+  if (newVideoId === currentVideoId) return;
+
+  // Disable captions from the previous video
+  disableCaptions();
+
+  // currentVideoId = newVideoId;
+  // //TODO I probably need to enable captions if there are saved ones
+  // // for that I need to communicate with my pop to get this info from local storage
+
+  // if (!newVideoId) return;
+
+  // // Load preferences for the new video
+  // const preferences = await getVideoPreferences(newVideoId);
+
+  // // Make sure we haven't navigated to another video
+  // if (currentVideoId !== newVideoId) return;
+
+  // if (preferences) {
+  //   console.log("Loaded preferences:", preferences);
+  //   // Update selected languages
+  //   // Apply captions if appropriate
+  //   handleVideoLoad(preferences.firstLang, preferences.secondLang);
+  // }
+}
+
+// Initial video
+handleVideoChange();
+
+// YouTube SPA navigation
