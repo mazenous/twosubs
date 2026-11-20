@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-
+import { saveVideoPreferences, getVideoPreferences } from "./services/storage";
 import { getActiveTab, getLanguages, applyCaptions } from "./services/youtube";
 
 const languages = ref([]);
@@ -13,19 +13,23 @@ const error = ref("");
 const applying = ref(false);
 
 let activeTabId = null;
+let videoId = "";
 
 onMounted(async () => {
   try {
     const tab = await getActiveTab();
+    videoId = new URL(tab.url).searchParams.get("v");
 
     if (!tab?.id) {
       throw new Error("No active tab found.");
     }
 
     activeTabId = tab.id;
-
+    if (!tab.url.includes("youtube.com")) {
+      error.value = "Only available for Youtube";
+      return;
+    }
     const response = await getLanguages(activeTabId);
-    console.log("response of getting current available languages", response);
     if (!response.languages) {
       error.value = response?.error || "Failed to load languages.";
       throw new Error(response?.error || "Failed to load languages.");
@@ -35,14 +39,13 @@ onMounted(async () => {
       error.value = "Only one language available, use Youtube captions";
 
     languages.value = response.languages;
+    const preferences = await getVideoPreferences(videoId);
 
-    if (response.selectedLanguages) {
-      firstLang.value = response.selectedLanguages.firstLang;
-
-      secondLang.value = response.selectedLanguages.secondLang;
+    if (preferences) {
+      firstLang.value = preferences.firstLang;
+      secondLang.value = preferences.secondLang;
     }
   } catch (err) {
-    console.log(response);
     console.log(err);
     error.value = "Make sure you are on an active YouTube video page.";
   } finally {
@@ -58,7 +61,12 @@ async function handleApply() {
 
   try {
     await applyCaptions(activeTabId, firstLang.value, secondLang.value);
+    await saveVideoPreferences(videoId, {
+      firstLang: firstLang.value,
+      secondLang: secondLang.value,
+    });
   } catch (err) {
+    console.log(err);
     error.value = "Failed to apply caption languages.";
   } finally {
     applying.value = false;
@@ -100,7 +108,7 @@ async function handleApply() {
           {{ lang.languageName }}
         </option>
       </select>
-
+      <!-- TODO: add kind of on going sign when button is clicked or like it is disabled or enabled... -->
       <button @click="handleApply" :disabled="applying">
         {{ applying ? "Applying..." : "Apply" }}
       </button>
