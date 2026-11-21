@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { saveVideoPreferences, getVideoPreferences } from "./services/storage";
-import { getActiveTab, getLanguages, applyCaptions } from "./services/youtube";
+import { saveVideoPreferences, getVideoPreferences } from "../services/storage";
+import { getActiveTab, getLanguages, applyCaptions } from "../services/youtube";
 
 const languages = ref([]);
 

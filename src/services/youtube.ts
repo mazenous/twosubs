@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { ExtensionMessage } from "./../../types/messages";
+import { ExtensionMessage } from "./../types/messages";
 
 export async function getActiveTab() {
   const tabs = await browser.tabs.query({

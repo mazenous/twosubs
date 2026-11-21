@@ -1,6 +1,6 @@
 import { fetchTranscript } from "youtube-transcript";
 import { YTAvailableCaptionSpec } from "./types/captions";
-import { getVideoPreferences } from "./popup/services/storage";
+import { getVideoPreferences } from "./services/storage";
 
 export function getVideoId() {
   const urlParams = new URLSearchParams(window.location.search);
