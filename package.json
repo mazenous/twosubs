@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "@types/firefox-webext-browser": "^143.0.1",
+    "jszip": "^3.10.2",
     "naive-ui": "^2.45.3",
     "vue": "^3.5.45",
     "webextension-polyfill": "^0.12.0",

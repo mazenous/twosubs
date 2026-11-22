@@ -8,6 +8,9 @@ export type ExtensionMessage =
       action: "apply_captions";
       firstLang: string;
       secondLang: string;
+    }
+  | {
+      action: "download_captions";
     };
 
 export interface GetLanguagesResponse {

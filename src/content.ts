@@ -5,6 +5,8 @@ import {
   updateCaptionStyles,
   initDualCaptions,
 } from "./util";
+import { CaptionTrack } from "./services/download-captions";
+import { fetchTranscript } from "youtube-transcript";
 import { getCaptionSettings } from "./services/caption-settings";
 import { ExtensionMessage } from "./types/messages";
 import browser from "webextension-polyfill";
@@ -39,6 +41,21 @@ browser.runtime.onMessage.addListener(async (msg: unknown) => {
     console.log("Selected captions:", message.firstLang, message.secondLang);
     const settings = await getCaptionSettings();
     handleVideoLoad(message.firstLang, message.secondLang, settings);
+  }
+
+  if (message.action === "download_captions") {
+    const result: CaptionTrack[] = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get("v")!;
+    const languages = await fetchAvailableLanguages(videoId);
+
+    for (const language of languages!) {
+      const captions = await fetchTranscript(videoId, {
+        lang: language.languageCode,
+      });
+      result.push({ languageCode: language.languageCode, captions: captions });
+    }
+    return result;
   }
 });
 
