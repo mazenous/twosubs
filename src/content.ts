@@ -53,10 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("popstate", handleVideoChange);
 
 browser.storage.onChanged.addListener(async (changes, areaName) => {
-  console.log("changes.....");
   if (areaName !== "local" || !changes.captionSettings) return;
   const settings = await getCaptionSettings();
-  console.log("update style");
   updateCaptionStyles(
     document.getElementById("fx-extension-subtitles")!,
     settings,
