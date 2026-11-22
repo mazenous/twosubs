@@ -1,4 +1,4 @@
-import type { YTAvailableCaptionSpec } from "./captions";
+import type { YTAvailableCaptionSpec } from "./youtube";
 
 export type ExtensionMessage =
   | {

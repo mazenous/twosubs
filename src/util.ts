@@ -1,55 +1,17 @@
 import { fetchTranscript } from "youtube-transcript";
-import { YTAvailableCaptionSpec } from "./types/captions";
+import { YTAvailableCaptionSpec } from "./types/youtube";
 import { getVideoPreferences } from "./services/storage";
+import { getVideoId } from "./services/youtube";
+import { CaptionSettings } from "./types/caption-settings";
+import { getCaptionSettings } from "./services/caption-settings";
 
-export function getVideoId() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("v");
-}
-
-export async function fetchAvailableLanguages(
-  VID: string,
-): Promise<YTAvailableCaptionSpec[] | undefined> {
-  const resp = await fetch("https://www.youtube.com/youtubei/v1/player", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent":
-        "com.google.android.youtube/20.10.38 (Linux; U; Android 14)",
-    },
-    body: JSON.stringify({
-      context: {
-        client: {
-          clientName: "ANDROID",
-          clientVersion: "20.10.38",
-        },
-      },
-      videoId: VID,
-    }),
-  });
-
-  if (!resp.ok) return undefined;
-
-  const data = await resp.json();
-  const captionTracks =
-    data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-  if (!captionTracks) return undefined;
-  const captionData = captionTracks.map((c: any) => ({
-    languageName: c.name.runs[0].text,
-    languageCode: c.languageCode,
-    baseUrl: c.baseUrl,
-  }));
-  return captionData;
-}
-
-export function initDualCaptions(video, moviePlayer, track1, track2) {
-  // Main Wrapper Container
+export function initDualCaptions(video, moviePlayer, track1, track2, settings) {
   const subContainer = document.createElement("div");
   subContainer.id = "fx-extension-subtitles";
 
   Object.assign(subContainer.style, {
     position: "absolute",
-    bottom: "12%", // Adjust to '88%' if you prefer track 2 at the top of the video screen
+    bottom: `${settings.position}%`,
     left: "50%",
     transform: "translateX(-50%)",
     zIndex: "2147483647",
@@ -59,45 +21,50 @@ export function initDualCaptions(video, moviePlayer, track1, track2) {
     fontFamily: '"YouTube Noto", Roboto, Arial, Helvetica, sans-serif',
     display: "flex",
     flexDirection: "column",
-    gap: "6px", // Generates clean space between the two subtitle lines
+    gap: "6px",
     alignItems: "center",
   });
 
-  // Base styling structure helper for individual lines
-  function createSubtitleLine(customColor = "#ffffff") {
-    const lineSpan = document.createElement("span");
-    Object.assign(lineSpan.style, {
-      backgroundColor: "rgba(8, 8, 8, 0.75)",
-      color: customColor,
-      fontSize: "34px",
+  function createSubtitleLine(fontSize, textColor) {
+    const line = document.createElement("span");
+
+    Object.assign(line.style, {
+      backgroundColor: hexToRgba(
+        settings.backgroundColor,
+        settings.backgroundOpacity / 100,
+      ),
+      color: textColor,
+      fontSize: `${fontSize}px`,
+      fontWeight: settings.fontWeight,
       padding: "2px 8px",
       borderRadius: "4px",
       whiteSpace: "pre-wrap",
       boxDecorationBreak: "clone",
       WebkitBoxDecorationBreak: "clone",
-      display: "none", // Hidden by default until matched
+      display: "none",
     });
-    return lineSpan;
+
+    return line;
   }
 
-  // Create line blocks (Tip: Making the second line yellow makes reading dual-subs much easier)
-  const line2 = createSubtitleLine("#ffffff"); // Track 1 (White)
-  const line1 = createSubtitleLine("#ffea00"); // Track 2 (Yellow)
+  const line1 = createSubtitleLine(settings.fontSize1, settings.textColor1);
+
+  const line2 = createSubtitleLine(settings.fontSize2, settings.textColor2);
 
   subContainer.appendChild(line1);
   subContainer.appendChild(line2);
+
   moviePlayer.appendChild(subContainer);
 
-  // Monitor continuous playback loop
   video.addEventListener("timeupdate", () => {
     const currentTimeMs = video.currentTime * 1000;
 
-    // --- Sync Track 1 ---
     const activeCap1 = track1.find(
       (cap) =>
         currentTimeMs >= cap.offset &&
         currentTimeMs <= cap.offset + cap.duration,
     );
+
     if (activeCap1) {
       line1.textContent = activeCap1.text;
       line1.style.display = "inline-block";
@@ -105,12 +72,12 @@ export function initDualCaptions(video, moviePlayer, track1, track2) {
       line1.style.display = "none";
     }
 
-    // --- Sync Track 2 ---
     const activeCap2 = track2.find(
       (cap) =>
         currentTimeMs >= cap.offset &&
         currentTimeMs <= cap.offset + cap.duration,
     );
+
     if (activeCap2) {
       line2.textContent = activeCap2.text;
       line2.style.display = "inline-block";
@@ -118,9 +85,21 @@ export function initDualCaptions(video, moviePlayer, track1, track2) {
       line2.style.display = "none";
     }
   });
+
+  return subContainer;
 }
 
-export async function handleVideoLoad(lang1: string, lang2: string) {
+function hexToRgba(hex: string, alpha: number): string {
+  const cleanHex = hex.replace("#", "");
+
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+export async function handleVideoLoad(lang1: string, lang2: string, settings) {
   console.log("handleVideoLoad");
   const videoId = getVideoId();
   if (!videoId) return;
@@ -142,7 +121,7 @@ export async function handleVideoLoad(lang1: string, lang2: string) {
       if (existingContainer) existingContainer.remove();
 
       // 3. Inject the UI overlay and pass the freshly fetched 't1' transcript array
-      initDualCaptions(video, moviePlayer, t1, t2);
+      initDualCaptions(video, moviePlayer, t1, t2, settings);
     }
   } catch (error) {
     console.error("Failed to fetch or apply captions:", error);
@@ -154,10 +133,48 @@ function disableCaptions() {
   document.getElementById("fx-extension-subtitles")?.remove();
 }
 
+export function updateCaptionStyles(
+  container: HTMLElement,
+  settings: CaptionSettings,
+) {
+  const lines = container.querySelectorAll("span");
+
+  const [line1, line2] = lines;
+
+  Object.assign(container.style, {
+    bottom: `${settings.position}%`,
+  });
+
+  if (line1) {
+    Object.assign(line1.style, {
+      fontSize: `${settings.fontSize1}px`,
+      color: settings.textColor1,
+      backgroundColor: hexToRgba(
+        settings.backgroundColor,
+        settings.backgroundOpacity / 100,
+      ),
+      fontWeight: settings.fontWeight,
+    });
+  }
+
+  if (line2) {
+    Object.assign(line2.style, {
+      fontSize: `${settings.fontSize2}px`,
+      color: settings.textColor2,
+      backgroundColor: hexToRgba(
+        settings.backgroundColor,
+        settings.backgroundOpacity / 100,
+      ),
+      fontWeight: settings.fontWeight,
+    });
+  }
+}
+
 export async function enableAvailablePreferences(videoId: string) {
   const preferences = await getVideoPreferences(videoId);
   if (preferences) {
-    handleVideoLoad(preferences.firstLang, preferences.secondLang);
+    const settings = await getCaptionSettings();
+    handleVideoLoad(preferences.firstLang, preferences.secondLang, settings);
   }
 }
 

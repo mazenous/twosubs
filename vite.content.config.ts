@@ -3,8 +3,8 @@ import { resolve } from "path";
 
 export default defineConfig({
   build: {
-    outDir: "output",
-    emptyOutDir: false,
+    outDir: "dist-content",
+    emptyOutDir: true,
     sourcemap: true,
     lib: {
       entry: resolve(import.meta.dirname, "src/content.ts"),

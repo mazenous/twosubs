@@ -21,11 +21,11 @@
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
-      "js": ["output/content.js"]
+      "js": ["dist-content/content.js"]
     }
   ],
   "action": {
     "default_title": "Twosubs",
-    "default_popup": "output/popup/popup.html"
+    "default_popup": "dist-popup/popup.html"
   }
 }

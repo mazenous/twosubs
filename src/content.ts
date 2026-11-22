@@ -1,13 +1,16 @@
 import {
-  fetchAvailableLanguages,
   handleVideoLoad,
   handleVideoChange,
   enableAvailablePreferences,
+  updateCaptionStyles,
+  initDualCaptions,
 } from "./util";
+import { getCaptionSettings } from "./services/caption-settings";
 import { ExtensionMessage } from "./types/messages";
 import browser from "webextension-polyfill";
-
-browser.runtime.onMessage.addListener((msg: unknown) => {
+import { fetchAvailableLanguages } from "./services/youtube";
+console.log("🔥 CONTENT SCRIPT LOADED");
+browser.runtime.onMessage.addListener(async (msg: unknown) => {
   const message = msg as ExtensionMessage;
   if (message.action === "get_languages") {
     const urlParams = new URLSearchParams(window.location.search);
@@ -34,7 +37,8 @@ browser.runtime.onMessage.addListener((msg: unknown) => {
   // Handle saving the user's caption choices
   if (message.action === "apply_captions") {
     console.log("Selected captions:", message.firstLang, message.secondLang);
-    handleVideoLoad(message.firstLang, message.secondLang);
+    const settings = await getCaptionSettings();
+    handleVideoLoad(message.firstLang, message.secondLang, settings);
   }
 });
 
@@ -47,3 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 window.addEventListener("popstate", handleVideoChange);
+
+browser.storage.onChanged.addListener(async (changes, areaName) => {
+  console.log("changes.....");
+  if (areaName !== "local" || !changes.captionSettings) return;
+  const settings = await getCaptionSettings();
+  console.log("update style");
+  updateCaptionStyles(
+    document.getElementById("fx-extension-subtitles")!,
+    settings,
+  );
+});

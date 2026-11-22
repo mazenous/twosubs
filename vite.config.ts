@@ -6,15 +6,26 @@ export default defineConfig({
   plugins: [vue()],
   root: "src/popup",
   build: {
-    outDir: "../../output/popup",
+    outDir: "../../dist-popup",
     emptyOutDir: true,
     sourcemap: true,
-
     rollupOptions: {
       input: {
         popup: resolve(import.meta.dirname, "src/popup/popup.html"),
       },
       output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "naive-ui",
+              test: /node_modules\/naive-ui/,
+            },
+            {
+              name: "vue",
+              test: /node_modules\/(vue|@vue)/,
+            },
+          ],
+        },
         entryFileNames: "assets/js/[name].js",
         chunkFileNames: "assets/js/[name].js",
         assetFileNames: (assetInfo) => {
@@ -22,7 +33,6 @@ export default defineConfig({
             return "assets/css/[name][extname]";
           }
           if (assetInfo.name?.endsWith(".html")) {
-            console.log("haha");
             return "[name][extname]";
           }
 
