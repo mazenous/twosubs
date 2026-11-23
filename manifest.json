@@ -6,7 +6,7 @@
   "description": "Adds two subtitles to Youtube videos.",
 
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "src/icons/twosubs.png"
   },
 
   "browser_specific_settings": {
@@ -26,12 +26,12 @@
   ],
   "action": {
     "default_title": "Open TwoSubs Sidebar",
-    "default_icon": "icons/border-48.png"
+    "default_icon": "src/icons/twosubs.png"
   },
   "sidebar_action": {
     "default_title": "TwoSubs",
     "default_panel": "dist-popup/popup.html",
-    "default_icon": "icons/border-48.png",
+    "default_icon": "src/icons/twosubs.png",
     "open_at_install": false
   },
   "background": {
