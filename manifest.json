@@ -25,7 +25,16 @@
     }
   ],
   "action": {
-    "default_title": "Twosubs",
-    "default_popup": "dist-popup/popup.html"
+    "default_title": "Open TwoSubs Sidebar",
+    "default_icon": "icons/border-48.png"
+  },
+  "sidebar_action": {
+    "default_title": "TwoSubs",
+    "default_panel": "dist-popup/popup.html",
+    "default_icon": "icons/border-48.png",
+    "open_at_install": false
+  },
+  "background": {
+    "scripts": ["src/background.js"]
   }
 }
