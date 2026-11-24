@@ -1,5 +1,4 @@
 import JSZip from "jszip";
-import { YTAvailableCaptionSpec } from "../types/youtube";
 interface Caption {
   offset: number;
   duration: number;

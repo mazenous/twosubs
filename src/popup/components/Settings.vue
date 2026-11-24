@@ -168,8 +168,6 @@ async function resetSettings() {
       Reset to defaults
     </n-button>
   </div>
-
-  <!-- Reset Button -->
 </template>
 
 <style scoped>

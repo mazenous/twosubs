@@ -3,7 +3,6 @@ import {
   handleVideoChange,
   enableAvailablePreferences,
   updateCaptionStyles,
-  initDualCaptions,
 } from "./util";
 import { CaptionTrack } from "./services/download-captions";
 import { fetchTranscript } from "youtube-transcript";
@@ -11,6 +10,11 @@ import { getCaptionSettings } from "./services/caption-settings";
 import { ExtensionMessage } from "./types/messages";
 import browser from "webextension-polyfill";
 import { fetchAvailableLanguages } from "./services/youtube";
+
+const uploadedCaptions = {
+  first: undefined,
+  second: undefined,
+};
 console.log("🔥 CONTENT SCRIPT LOADED");
 browser.runtime.onMessage.addListener(async (msg: unknown) => {
   const message = msg as ExtensionMessage;
@@ -40,7 +44,25 @@ browser.runtime.onMessage.addListener(async (msg: unknown) => {
   if (message.action === "apply_captions") {
     console.log("Selected captions:", message.firstLang, message.secondLang);
     const settings = await getCaptionSettings();
-    handleVideoLoad(message.firstLang, message.secondLang, settings);
+
+    handleVideoLoad(
+      message.firstLang,
+      message.secondLang,
+      settings,
+      //@ts-ignore
+      uploadedCaptions,
+    );
+  }
+
+  if (message.action === "apply_uploaded_subtitle") {
+    // Determine format from fileName or subtitleText.
+    // Parse .srt or JSON into { offset, duration, text }[].
+    // Replace track 1 or track 2.
+    // Re-run initialization/rendering.
+    uploadedCaptions[message.captionOrder] = JSON.parse(message.subtitleText);
+    console.log("successfuly parsed text..");
+    console.log(uploadedCaptions[message.captionOrder]);
+    return { success: true };
   }
 
   if (message.action === "download_captions") {

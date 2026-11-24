@@ -5,7 +5,14 @@ import { getVideoId } from "./services/youtube";
 import { CaptionSettings } from "./types/caption-settings";
 import { getCaptionSettings } from "./services/caption-settings";
 
-export function initDualCaptions(video, moviePlayer, track1, track2, settings) {
+export function initDualCaptions(
+  video,
+  moviePlayer,
+  track1,
+  track2,
+  settings,
+  uploadedCaptions = undefined,
+) {
   const subContainer = document.createElement("div");
   subContainer.id = "fx-extension-subtitles";
 
@@ -99,17 +106,28 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export async function handleVideoLoad(lang1: string, lang2: string, settings) {
+export async function handleVideoLoad(
+  lang1: string,
+  lang2: string,
+  settings,
+  uploadedCaptions = undefined,
+) {
   console.log("handleVideoLoad");
   const videoId = getVideoId();
   if (!videoId) return;
 
   try {
     // 1. Fetch the array of transcripts using your existing code
-    const t1 = await fetchTranscript(videoId, { lang: lang1 });
-    const t2 = await fetchTranscript(videoId, { lang: lang2 });
-
+    let t1 = await fetchTranscript(videoId, { lang: lang1 });
+    let t2 = await fetchTranscript(videoId, { lang: lang2 });
+    //also check if there's uploaded captions which should have priority.
+    //there are some edge cases and some stuff to consider but for now these should
+    // be replaced and some refactoring should be done afterwards.
     // 2. Locate the YouTube player elements
+    if (uploadedCaptions && uploadedCaptions["first"])
+      t1 = uploadedCaptions["first"];
+    if (uploadedCaptions && uploadedCaptions["second"])
+      t2 = uploadedCaptions["second"];
     const video = document.querySelector("video");
     const moviePlayer = document.querySelector("#movie_player");
 

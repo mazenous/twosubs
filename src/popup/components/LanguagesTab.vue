@@ -31,14 +31,28 @@ const applying = ref(false);
 const firstUploadedFile = ref<File | null>(null);
 const secondUploadedFile = ref<File | null>(null);
 
-function handleFirstUpload(file: File) {
-  firstUploadedFile.value = file;
-  console.log("First subtitle:", file.name);
+async function handleFirstUpload(payload: { text: string }) {
+  await sendUploadedSubtitle(payload.text, "first");
 }
 
-function handleSecondUpload(file: File) {
-  secondUploadedFile.value = file;
-  console.log("Second subtitle:", file.name);
+async function handleSecondUpload(payload: { text: string }) {
+  await sendUploadedSubtitle(payload.text, "second");
+}
+
+async function sendUploadedSubtitle(
+  subtitleText: string,
+  captionOrder: "first" | "second",
+) {
+  if (!activeTabId) {
+    error.value = "No active tab.";
+    return;
+  }
+
+  await browser.tabs.sendMessage<ExtensionMessage>(activeTabId, {
+    action: "apply_uploaded_subtitle",
+    subtitleText,
+    captionOrder,
+  });
 }
 let activeTabId: number | null = null;
 let videoId: null | string = "";
@@ -124,11 +138,13 @@ async function handleApply() {
       title="First language"
       v-model:lang="firstLang"
       :languages="languages"
+      @uploaded="handleFirstUpload"
     />
     <CaptionSelect
       title="Second language"
       v-model:lang="secondLang"
       :languages="languages"
+      @uploaded="handleSecondUpload"
     />
     <!-- TODO: add kind of on going sign when button is clicked or like it is disabled or enabled... -->
     <n-flix>

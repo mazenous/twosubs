@@ -2,7 +2,11 @@
 import { ref } from "vue";
 
 const fileInput = ref<HTMLInputElement | null>(null);
+const model = defineModel<string>("parseError");
 
+const emit = defineEmits<{
+  uploaded: [payload: { text: string }];
+}>();
 async function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -10,6 +14,17 @@ async function handleFileChange(event: Event) {
   if (!file) return;
 
   console.log("Selected:", file.name);
+
+  try {
+    const text = await file.text();
+
+    emit("uploaded", {
+      text,
+    });
+  } catch (error) {
+    model.value = "Could not read subtitle file.";
+  }
+  // model.value = file.name;
   // console.log(await file.text());
   //here the work should be done,
   // first set button on loading

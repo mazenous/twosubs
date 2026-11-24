@@ -11,6 +11,11 @@ export type ExtensionMessage =
     }
   | {
       action: "download_captions";
+    }
+  | {
+      action: "apply_uploaded_subtitle";
+      subtitleText: string;
+      captionOrder: "first" | "second";
     };
 
 export interface GetLanguagesResponse {
